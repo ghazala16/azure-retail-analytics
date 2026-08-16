@@ -1,0 +1,29 @@
+{
+    "name": "LS_REST_OnlineSalesAPI",
+    "type": "Microsoft.DataFactory/factories/linkedservices",
+    "properties": {
+        "annotations": [],
+        "type": "RestService",
+        "typeProperties": {
+            "url": "https://api.retailcorp.com/ecommerce/v2",
+            "enableServerCertificateValidation": true,
+            "authenticationType": "OAuth2ClientCredential",
+            "servicePrincipalId": "ecommerce-adf-reader",
+            "servicePrincipalCredentialType": "ServicePrincipalKey",
+            "servicePrincipalCredential": {
+                "type": "AzureKeyVaultSecret",
+                "store": {
+                    "referenceName": "LS_KeyVault_RetailLake",
+                    "type": "LinkedServiceReference"
+                },
+                "secretName": "ecommerce-api-client-secret"
+            },
+            "tokenEndpoint": "https://auth.retailcorp.com/oauth2/token",
+            "resource": "https://api.retailcorp.com"
+        },
+        "connectVia": {
+            "referenceName": "AutoResolveIntegrationRuntime",
+            "type": "IntegrationRuntimeReference"
+        }
+    }
+}

@@ -1,0 +1,141 @@
+-- =========================================================================
+-- DAX Measures — Retail Sales Analytics Platform
+-- Organized by the dashboard page that primarily consumes them.
+-- =========================================================================
+
+-- ---------------------------------------------------------------
+-- Shared / core measures
+-- ---------------------------------------------------------------
+
+Total Revenue =
+SUM ( Fact_SalesPerformance[gross_revenue] )
+
+Total Units Sold =
+SUM ( Fact_SalesPerformance[units_sold] )
+
+Total Transactions =
+SUM ( Fact_SalesPerformance[num_transactions] )
+
+Avg Order Value =
+DIVIDE ( [Total Revenue], [Total Transactions], 0 )
+
+Gross Margin % =
+DIVIDE (
+    SUM ( Fact_SalesPerformance[gross_margin] ),
+    [Total Revenue],
+    0
+)
+
+-- ---------------------------------------------------------------
+-- Page 1 — Sales Performance dashboard
+-- ---------------------------------------------------------------
+
+Revenue MTD =
+TOTALMTD ( [Total Revenue], Dim_Date[date] )
+
+Revenue Prior Month =
+CALCULATE ( [Total Revenue], DATEADD ( Dim_Date[date], -1, MONTH ) )
+
+Revenue MoM % =
+DIVIDE ( [Total Revenue] - [Revenue Prior Month], [Revenue Prior Month], 0 )
+
+Revenue YTD =
+TOTALYTD ( [Total Revenue], Dim_Date[date] )
+
+Revenue Same Period Last Year =
+CALCULATE ( [Total Revenue], SAMEPERIODLASTYEAR ( Dim_Date[date] ) )
+
+Revenue YoY % =
+DIVIDE (
+    [Total Revenue] - [Revenue Same Period Last Year],
+    [Revenue Same Period Last Year],
+    0
+)
+
+Online Revenue Share % =
+VAR OnlineRevenue =
+    CALCULATE ( [Total Revenue], Dim_Channel[channel] = "Online" )
+RETURN
+    DIVIDE ( OnlineRevenue, [Total Revenue], 0 )
+
+7-Day Rolling Revenue =
+CALCULATE (
+    [Total Revenue],
+    DATESINPERIOD ( Dim_Date[date], MAX ( Dim_Date[date] ), -7, DAY )
+)
+
+-- ---------------------------------------------------------------
+-- Page 2 — Product Trends dashboard
+-- ---------------------------------------------------------------
+
+Product Revenue =
+SUM ( Fact_ProductTrends[revenue] )
+
+Product Units Sold =
+SUM ( Fact_ProductTrends[units_sold] )
+
+Top 10 Products Revenue =
+CALCULATE (
+    [Product Revenue],
+    TOPN ( 10, ALL ( Fact_ProductTrends[product_name] ), [Product Revenue] )
+)
+
+Category Revenue Share % =
+DIVIDE (
+    [Product Revenue],
+    CALCULATE ( [Product Revenue], ALL ( Fact_ProductTrends[category] ) ),
+    0
+)
+
+Revenue per Unique Customer =
+DIVIDE ( [Product Revenue], SUM ( Fact_ProductTrends[unique_customers] ), 0 )
+
+Category Rank by Revenue =
+RANKX ( ALL ( Fact_ProductTrends[category] ), CALCULATE ( [Product Revenue] ), , DESC )
+
+-- ---------------------------------------------------------------
+-- Page 3 — Regional Insights dashboard (10+ regions)
+-- ---------------------------------------------------------------
+
+Regional Revenue =
+SUM ( Dim_Region[gross_revenue] )
+
+Region Revenue Rank =
+RANKX ( ALL ( Dim_Region[region] ), [Regional Revenue], , DESC )
+
+Region Revenue Share of Total % =
+DIVIDE ( [Regional Revenue], CALCULATE ( [Regional Revenue], ALL ( Dim_Region[region] ) ), 0 )
+
+Avg Transaction Value by Region =
+AVERAGE ( Dim_Region[avg_transaction_value] )
+
+Regions Above Global Average =
+VAR GlobalAvg =
+    CALCULATE ( [Regional Revenue], ALL ( Dim_Region[region] ) )
+        / CALCULATE ( DISTINCTCOUNT ( Dim_Region[region] ), ALL ( Dim_Region[region] ) )
+RETURN
+    CALCULATE (
+        DISTINCTCOUNT ( Dim_Region[region] ),
+        FILTER ( ALL ( Dim_Region ), Dim_Region[gross_revenue] > GlobalAvg )
+    )
+
+-- ---------------------------------------------------------------
+-- Page 4 — Data Quality scorecard (shared footer / drill-through page)
+-- ---------------------------------------------------------------
+
+DQ Checks Passed % =
+DIVIDE (
+    SUM ( Fact_DQScorecard[checks_passed] ),
+    SUM ( Fact_DQScorecard[checks_run] ),
+    0
+)
+
+DQ Records Flagged =
+SUM ( Fact_DQScorecard[total_records_flagged] )
+
+DQ Flagged Rate % =
+DIVIDE (
+    SUM ( Fact_DQScorecard[total_records_flagged] ),
+    SUM ( Fact_DQScorecard[total_records_checked] ),
+    0
+)

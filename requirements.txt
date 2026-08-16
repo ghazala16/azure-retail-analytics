@@ -1,0 +1,14 @@
+# Core pipeline
+pyspark==3.5.1
+deltalake==1.6.2
+pyarrow==25.0.1
+
+# Source data generation (demo/local mode only)
+Faker==40.36.0
+
+# Testing
+pytest==9.1.1
+
+# Dashboard preview generation (demo/local mode only)
+matplotlib==3.10.8
+pandas

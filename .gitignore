@@ -1,0 +1,21 @@
+# Generated data (large; regenerate with scripts/generate_source_data.py)
+data/raw/*.csv
+data/bronze/
+data/silver/
+data/gold/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+
+# Spark
+spark-warehouse/
+derby.log
+metastore_db/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

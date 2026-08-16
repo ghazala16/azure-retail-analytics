@@ -1,0 +1,11 @@
+{
+  "source_datasets_integrated": 4,
+  "raw_sales_records": 520000,
+  "raw_store_sales_records": 300000,
+  "raw_online_sales_records": 220000,
+  "clean_sales_records_silver": 513124,
+  "records_quarantined_by_dq": 6876,
+  "regions_covered": 11,
+  "total_dq_checks_run": 10,
+  "runtime_seconds": 287.7
+}

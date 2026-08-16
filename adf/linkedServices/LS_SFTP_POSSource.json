@@ -1,0 +1,27 @@
+{
+    "name": "LS_SFTP_POSSource",
+    "type": "Microsoft.DataFactory/factories/linkedservices",
+    "properties": {
+        "annotations": [],
+        "type": "Sftp",
+        "typeProperties": {
+            "host": "pos-export.retailcorp.internal",
+            "port": 22,
+            "authenticationType": "Basic",
+            "userName": "svc_adf_ingest",
+            "password": {
+                "type": "AzureKeyVaultSecret",
+                "store": {
+                    "referenceName": "LS_KeyVault_RetailLake",
+                    "type": "LinkedServiceReference"
+                },
+                "secretName": "sftp-pos-source-password"
+            },
+            "skipHostKeyValidation": false
+        },
+        "connectVia": {
+            "referenceName": "AutoResolveIntegrationRuntime",
+            "type": "IntegrationRuntimeReference"
+        }
+    }
+}
