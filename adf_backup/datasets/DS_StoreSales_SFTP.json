@@ -1,0 +1,35 @@
+{
+    "name": "DS_StoreSales_SFTP",
+    "type": "Microsoft.DataFactory/factories/datasets",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "LS_SFTP_POSSource",
+            "type": "LinkedServiceReference"
+        },
+        "annotations": [],
+        "type": "DelimitedText",
+        "typeProperties": {
+            "location": {
+                "type": "SftpLocation",
+                "folderPath": "exports/pos",
+                "fileName": "store_sales_*.csv"
+            },
+            "columnDelimiter": ",",
+            "escapeChar": "\\",
+            "firstRowAsHeader": true,
+            "quoteChar": "\""
+        },
+        "schema": [
+            { "name": "transaction_id", "type": "String" },
+            { "name": "store_id", "type": "String" },
+            { "name": "product_id", "type": "String" },
+            { "name": "quantity", "type": "String" },
+            { "name": "unit_price", "type": "String" },
+            { "name": "discount_pct", "type": "String" },
+            { "name": "total_amount", "type": "String" },
+            { "name": "payment_method", "type": "String" },
+            { "name": "transaction_ts", "type": "String" },
+            { "name": "customer_id", "type": "String" }
+        ]
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "name": "DS_OnlineSales_REST",
+    "type": "Microsoft.DataFactory/factories/datasets",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "LS_REST_OnlineSalesAPI",
+            "type": "LinkedServiceReference"
+        },
+        "annotations": [],
+        "type": "RestResource",
+        "typeProperties": {
+            "relativeUrl": "orders",
+            "requestMethod": "GET",
+            "paginationRules": {
+                "supportRFC5988": "true"
+            }
+        }
+    }
+}

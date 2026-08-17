@@ -1,0 +1,11 @@
+{
+    "name": "LS_KeyVault_RetailLake",
+    "type": "Microsoft.DataFactory/factories/linkedservices",
+    "properties": {
+        "annotations": [],
+        "type": "AzureKeyVault",
+        "typeProperties": {
+            "baseUrl": "https://kv-retail-lake.vault.azure.net/"
+        }
+    }
+}
