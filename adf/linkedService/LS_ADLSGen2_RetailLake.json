@@ -1,22 +1,18 @@
 {
-    "name": "LS_ADLSGen2_RetailLake",
-    "properties": {
-        "annotations": [],
-        "type": "AzureBlobFS",
-        "typeProperties": {
-            "url": "https://retailsalesadls.dfs.core.windows.net",
-            "accountKey": {
-                "type": "AzureKeyVaultSecret",
-                "store": {
-                    "referenceName": "LS_KeyVault_RetailLake",
-                    "type": "LinkedServiceReference"
-                },
-                "secretName": "adls-retaillake-account-key"
-            }
-        },
-        "connectVia": {
-            "referenceName": "AutoResolveIntegrationRuntime",
-            "type": "IntegrationRuntimeReference"
-        }
-    }
+	"name": "LS_ADLSGen2_RetailLake",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://retailanalytics.dfs.core.windows.net",
+			"accountKey": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "LS_KeyVault_RetailLake",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "adls-retaillake-account-key"
+			}
+		}
+	}
 }
