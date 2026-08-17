@@ -2,6 +2,7 @@
 pyspark==3.5.1
 deltalake==1.6.2
 pyarrow==25.0.1
+setuptools
 
 # Source data generation (demo/local mode only)
 Faker==40.36.0

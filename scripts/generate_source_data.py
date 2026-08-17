@@ -18,6 +18,7 @@ that the schema validation / DQ framework downstream has real issues to
 detect and report on.
 """
 import csv
+import os
 import random
 import uuid
 from datetime import datetime, timedelta
@@ -222,6 +223,7 @@ def build_online_sales(product_ids, n_rows=220_000):
 
 
 if __name__ == "__main__":
+    os.makedirs(OUT_DIR, exist_ok=True)
     print("Generating product_catalog.csv ...")
     product_ids = build_product_catalog()
 

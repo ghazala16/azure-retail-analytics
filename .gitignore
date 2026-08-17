@@ -19,3 +19,4 @@ metastore_db/
 .DS_Store
 .vscode/
 .idea/
+venv/

@@ -7,5 +7,5 @@
   "records_quarantined_by_dq": 6876,
   "regions_covered": 11,
   "total_dq_checks_run": 10,
-  "runtime_seconds": 287.7
+  "runtime_seconds": 170.5
 }
