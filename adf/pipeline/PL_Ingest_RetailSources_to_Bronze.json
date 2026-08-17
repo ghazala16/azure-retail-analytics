@@ -1,221 +1,296 @@
 {
-    "name": "PL_Ingest_RetailSources_to_Bronze",
-    "properties": {
-        "description": "Ingests the 4 retail source datasets (store_sales, online_sales, product_catalog, store_master) from POS/SFTP, e-commerce REST API, and ERP flat files into the ADLS Gen2 bronze zone. Runs schema validation activity before promoting data to silver.",
-        "activities": [
-            {
-                "name": "Copy_StoreSales_SFTP_to_Bronze",
-                "type": "Copy",
-                "typeProperties": {
-                    "source": {
-                        "type": "DelimitedTextSource",
-                        "storeSettings": {
-                            "type": "SftpReadSettings",
-                            "recursive": true,
-                            "wildcardFileName": "store_sales_*.csv"
-                        }
-                    },
-                    "sink": {
-                        "type": "DelimitedTextSink",
-                        "storeSettings": {
-                            "type": "AzureBlobFSWriteSettings"
-                        }
-                    },
-                    "enableStaging": false
-                },
-                "inputs": [
-                    {
-                        "referenceName": "DS_StoreSales_SFTP",
-                        "type": "DatasetReference"
-                    }
-                ],
-                "outputs": [
-                    {
-                        "referenceName": "DS_ADLS_Bronze",
-                        "type": "DatasetReference",
-                        "parameters": {
-                            "sourceName": "store_sales",
-                            "loadDate": "@formatDateTime(utcNow(), 'yyyy-MM-dd')"
-                        }
-                    }
-                ]
-            },
-            {
-                "name": "Copy_OnlineSales_REST_to_Bronze",
-                "type": "Copy",
-                "typeProperties": {
-                    "source": {
-                        "type": "RestSource",
-                        "httpRequestTimeout": "00:05:00",
-                        "requestInterval": 10,
-                        "paginationRules": {
-                            "AbsoluteUrl": "$.nextLink"
-                        }
-                    },
-                    "sink": {
-                        "type": "DelimitedTextSink",
-                        "storeSettings": {
-                            "type": "AzureBlobFSWriteSettings"
-                        }
-                    }
-                },
-                "inputs": [
-                    {
-                        "referenceName": "DS_OnlineSales_REST",
-                        "type": "DatasetReference"
-                    }
-                ],
-                "outputs": [
-                    {
-                        "referenceName": "DS_ADLS_Bronze",
-                        "type": "DatasetReference",
-                        "parameters": {
-                            "sourceName": "online_sales",
-                            "loadDate": "@formatDateTime(utcNow(), 'yyyy-MM-dd')"
-                        }
-                    }
-                ]
-            },
-            {
-                "name": "Copy_ProductCatalog_ERP_to_Bronze",
-                "type": "Copy",
-                "dependsOn": [],
-                "typeProperties": {
-                    "source": {
-                        "type": "DelimitedTextSource",
-                        "storeSettings": {
-                            "type": "SftpReadSettings",
-                            "recursive": false
-                        }
-                    },
-                    "sink": {
-                        "type": "DelimitedTextSink",
-                        "storeSettings": {
-                            "type": "AzureBlobFSWriteSettings"
-                        }
-                    }
-                },
-                "inputs": [
-                    {
-                        "referenceName": "DS_ERP_ReferenceFiles",
-                        "type": "DatasetReference",
-                        "parameters": {
-                            "fileName": "product_catalog.csv"
-                        }
-                    }
-                ],
-                "outputs": [
-                    {
-                        "referenceName": "DS_ADLS_Bronze",
-                        "type": "DatasetReference",
-                        "parameters": {
-                            "sourceName": "product_catalog",
-                            "loadDate": "@formatDateTime(utcNow(), 'yyyy-MM-dd')"
-                        }
-                    }
-                ]
-            },
-            {
-                "name": "Copy_StoreMaster_ERP_to_Bronze",
-                "type": "Copy",
-                "dependsOn": [],
-                "typeProperties": {
-                    "source": {
-                        "type": "DelimitedTextSource",
-                        "storeSettings": {
-                            "type": "SftpReadSettings",
-                            "recursive": false
-                        }
-                    },
-                    "sink": {
-                        "type": "DelimitedTextSink",
-                        "storeSettings": {
-                            "type": "AzureBlobFSWriteSettings"
-                        }
-                    }
-                },
-                "inputs": [
-                    {
-                        "referenceName": "DS_ERP_ReferenceFiles",
-                        "type": "DatasetReference",
-                        "parameters": {
-                            "fileName": "store_master.csv"
-                        }
-                    }
-                ],
-                "outputs": [
-                    {
-                        "referenceName": "DS_ADLS_Bronze",
-                        "type": "DatasetReference",
-                        "parameters": {
-                            "sourceName": "store_master",
-                            "loadDate": "@formatDateTime(utcNow(), 'yyyy-MM-dd')"
-                        }
-                    }
-                ]
-            },
-            {
-                "name": "Validate_Bronze_Schema",
-                "type": "DatabricksNotebook",
-                "dependsOn": [
-                    {
-                        "activity": "Copy_StoreSales_SFTP_to_Bronze",
-                        "dependencyConditions": [
-                            "Succeeded"
-                        ]
-                    },
-                    {
-                        "activity": "Copy_OnlineSales_REST_to_Bronze",
-                        "dependencyConditions": [
-                            "Succeeded"
-                        ]
-                    },
-                    {
-                        "activity": "Copy_ProductCatalog_ERP_to_Bronze",
-                        "dependencyConditions": [
-                            "Succeeded"
-                        ]
-                    },
-                    {
-                        "activity": "Copy_StoreMaster_ERP_to_Bronze",
-                        "dependencyConditions": [
-                            "Succeeded"
-                        ]
-                    }
-                ],
-                "typeProperties": {
-                    "notebookPath": "/Shared/retail-analytics/01_schema_validation",
-                    "baseParameters": {
-                        "loadDate": "@formatDateTime(utcNow(), 'yyyy-MM-dd')"
-                    }
-                },
-                "linkedServiceName": {
-                    "referenceName": "LS_Databricks_RetailLake",
-                    "type": "LinkedServiceReference"
-                }
-            },
-            {
-                "name": "Execute_Silver_Gold_Transform_Pipeline",
-                "type": "ExecutePipeline",
-                "dependsOn": [
-                    {
-                        "activity": "Validate_Bronze_Schema",
-                        "dependencyConditions": [
-                            "Succeeded"
-                        ]
-                    }
-                ],
-                "typeProperties": {
-                    "pipeline": {
-                        "referenceName": "PL_Transform_Bronze_to_Silver_Gold",
-                        "type": "PipelineReference"
-                    },
-                    "waitOnCompletion": true
-                }
-            }
-        ],
-        "annotations": [
-            "retail-sales-analytics-platform"
-        ]
-    }
+	"name": "PL_Ingest_RetailSources_to_Bronze",
+	"properties": {
+		"description": "Ingests the 4 retail source datasets (store_sales, online_sales, product_catalog, store_master) from POS/SFTP, e-commerce REST API, and ERP flat files into the ADLS Gen2 bronze zone. Runs schema validation activity before promoting data to silver.",
+		"activities": [
+			{
+				"name": "Copy_StoreSales_SFTP_to_Bronze",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "SftpReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "exports/pos",
+							"wildcardFileName": "store_sales.csv",
+							"disableChunking": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_StoreSales_SFTP",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_ADLS_Bronze",
+						"type": "DatasetReference",
+						"parameters": {
+							"sourceName": "store_sales",
+							"loadDate": "@formatDateTime(utcNow(), 'yyyy-MM-dd')"
+						}
+					}
+				]
+			},
+			{
+				"name": "Copy_OnlineSales_REST_to_Bronze",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:05:00",
+						"requestInterval": "00.00:00:00.010"
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_OnlineSales_REST",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_ADLS_Bronze",
+						"type": "DatasetReference",
+						"parameters": {
+							"sourceName": "online_sales",
+							"loadDate": "@formatDateTime(utcNow(), 'yyyy-MM-dd')"
+						}
+					}
+				]
+			},
+			{
+				"name": "Copy_ProductCatalog_ERP_to_Bronze",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "SftpReadSettings",
+							"recursive": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_ERP_ReferenceFiles",
+						"type": "DatasetReference",
+						"parameters": {
+							"fileName": "product_catalog.csv"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_ADLS_Bronze",
+						"type": "DatasetReference",
+						"parameters": {
+							"sourceName": "product_catalog",
+							"loadDate": "@formatDateTime(utcNow(), 'yyyy-MM-dd')"
+						}
+					}
+				]
+			},
+			{
+				"name": "Copy_StoreMaster_ERP_to_Bronze",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "SftpReadSettings",
+							"recursive": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_ERP_ReferenceFiles",
+						"type": "DatasetReference",
+						"parameters": {
+							"fileName": "store_master.csv"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_ADLS_Bronze",
+						"type": "DatasetReference",
+						"parameters": {
+							"sourceName": "store_master",
+							"loadDate": "@formatDateTime(utcNow(), 'yyyy-MM-dd')"
+						}
+					}
+				]
+			},
+			{
+				"name": "Validate_Bronze_Schema",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Copy_StoreSales_SFTP_to_Bronze",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Copy_OnlineSales_REST_to_Bronze",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Copy_ProductCatalog_ERP_to_Bronze",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Copy_StoreMaster_ERP_to_Bronze",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Users/ghazalajamal202@gmail.com/Shared/retail-analytics/01_schema_validation",
+					"baseParameters": {
+						"loadDate": {
+							"value": "@formatDateTime(utcNow(), 'yyyy-MM-dd')",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_Databricks_RetailLake",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Execute_Silver_Gold_Transform_Pipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Validate_Bronze_Schema",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "PL_Transform_Bronze_to_Silver_Gold",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"annotations": [
+			"retail-sales-analytics-platform"
+		]
+	}
 }

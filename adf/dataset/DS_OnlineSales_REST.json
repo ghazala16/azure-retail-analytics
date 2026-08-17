@@ -1,18 +1,18 @@
 {
-    "name": "DS_OnlineSales_REST",
-    "properties": {
-        "linkedServiceName": {
-            "referenceName": "LS_REST_OnlineSalesAPI",
-            "type": "LinkedServiceReference"
-        },
-        "annotations": [],
-        "type": "RestResource",
-        "typeProperties": {
-            "relativeUrl": "orders",
-            "requestMethod": "GET",
-            "paginationRules": {
-                "supportRFC5988": "true"
-            }
-        }
-    }
+	"name": "DS_OnlineSales_REST",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_REST_DummyJSON",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": "products",
+			"requestMethod": "GET",
+			"paginationRules": {
+				"supportRFC5988": "true"
+			}
+		}
+	}
 }
