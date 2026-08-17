@@ -1,19 +1,30 @@
 {
-    "name": "LS_Databricks_RetailLake",
-    "properties": {
-        "annotations": [],
-        "type": "AzureDatabricks",
-        "typeProperties": {
-            "domain": "https://adb-retail-lake.azuredatabricks.net",
-            "authentication": "MSI",
-            "workspaceResourceId": "/subscriptions/<sub-id>/resourceGroups/rg-retail-analytics/providers/Microsoft.Databricks/workspaces/dbw-retail-lake",
-            "newClusterVersion": "14.3.x-scala2.12",
-            "newClusterNumOfWorker": "2:8",
-            "newClusterNodeType": "Standard_DS3_v2",
-            "newClusterAutoScale": {
-                "minWorkers": 2,
-                "maxWorkers": 8
-            }
-        }
-    }
+	"name": "LS_Databricks_RetailLake",
+	"properties": {
+		"annotations": [],
+		"type": "AzureDatabricks",
+		"typeProperties": {
+			"domain": "https://adb-7405613658142247.7.azuredatabricks.net",
+			"accessToken": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "LS_KeyVault_RetailLake",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "databricks-token"
+			},
+			"newClusterNodeType": "Standard_DS3_v2",
+			"newClusterNumOfWorker": "2:8",
+			"newClusterSparkEnvVars": {
+				"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+			},
+			"newClusterVersion": "14.3.x-scala2.12",
+			"clusterOption": "Fixed",
+			"newClusterInitScripts": [],
+			"newClusterAutoScale": {
+				"minWorkers": 2,
+				"maxWorkers": 8
+			}
+		}
+	}
 }
