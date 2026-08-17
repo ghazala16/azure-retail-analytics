@@ -1,6 +1,5 @@
 {
     "name": "PL_Transform_Bronze_to_Silver_Gold",
-    "type": "Microsoft.DataFactory/factories/pipelines",
     "properties": {
         "description": "Triggers Databricks PySpark notebooks that cleanse, normalize, and aggregate bronze data into Delta Lake silver and gold analytical datasets, optimized for Power BI reporting.",
         "activities": [
@@ -25,7 +24,12 @@
                 "name": "Aggregate_to_Gold",
                 "type": "DatabricksNotebook",
                 "dependsOn": [
-                    { "activity": "Cleanse_and_Normalize_to_Silver", "dependencyConditions": ["Succeeded"] }
+                    {
+                        "activity": "Cleanse_and_Normalize_to_Silver",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
                 ],
                 "typeProperties": {
                     "notebookPath": "/Shared/retail-analytics/03_aggregate_gold",
@@ -45,7 +49,12 @@
                 "name": "Data_Quality_Report",
                 "type": "DatabricksNotebook",
                 "dependsOn": [
-                    { "activity": "Aggregate_to_Gold", "dependencyConditions": ["Succeeded"] }
+                    {
+                        "activity": "Aggregate_to_Gold",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
                 ],
                 "typeProperties": {
                     "notebookPath": "/Shared/retail-analytics/04_dq_report",
@@ -65,7 +74,12 @@
                 "name": "Notify_On_Failure",
                 "type": "WebActivity",
                 "dependsOn": [
-                    { "activity": "Data_Quality_Report", "dependencyConditions": ["Failed"] }
+                    {
+                        "activity": "Data_Quality_Report",
+                        "dependencyConditions": [
+                            "Failed"
+                        ]
+                    }
                 ],
                 "typeProperties": {
                     "url": "https://prod-00.westus.logic.azure.com/workflows/retail-alerts/invoke",
@@ -78,8 +92,12 @@
             }
         ],
         "parameters": {
-            "loadDate": { "type": "string" }
+            "loadDate": {
+                "type": "string"
+            }
         },
-        "annotations": ["retail-sales-analytics-platform"]
+        "annotations": [
+            "retail-sales-analytics-platform"
+        ]
     }
 }

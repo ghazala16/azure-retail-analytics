@@ -1,6 +1,5 @@
 {
     "name": "DS_ERP_ReferenceFiles",
-    "type": "Microsoft.DataFactory/factories/datasets",
     "properties": {
         "linkedServiceName": {
             "referenceName": "LS_SFTP_POSSource",

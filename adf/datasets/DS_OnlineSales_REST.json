@@ -1,6 +1,5 @@
 {
     "name": "DS_OnlineSales_REST",
-    "type": "Microsoft.DataFactory/factories/datasets",
     "properties": {
         "linkedServiceName": {
             "referenceName": "LS_REST_OnlineSalesAPI",

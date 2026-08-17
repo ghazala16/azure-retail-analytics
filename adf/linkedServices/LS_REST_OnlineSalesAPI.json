@@ -1,6 +1,5 @@
 {
     "name": "LS_REST_OnlineSalesAPI",
-    "type": "Microsoft.DataFactory/factories/linkedservices",
     "properties": {
         "annotations": [],
         "type": "RestService",

@@ -1,6 +1,5 @@
 {
     "name": "DS_ADLS_Bronze",
-    "type": "Microsoft.DataFactory/factories/datasets",
     "properties": {
         "linkedServiceName": {
             "referenceName": "LS_ADLSGen2_RetailLake",

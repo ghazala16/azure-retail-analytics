@@ -1,6 +1,5 @@
 {
     "name": "TR_Daily_RetailIngest",
-    "type": "Microsoft.DataFactory/factories/triggers",
     "properties": {
         "annotations": [],
         "runtimeState": "Started",

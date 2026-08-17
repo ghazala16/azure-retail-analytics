@@ -1,6 +1,5 @@
 {
     "name": "LS_ADLSGen2_RetailLake",
-    "type": "Microsoft.DataFactory/factories/linkedservices",
     "properties": {
         "annotations": [],
         "type": "AzureBlobFS",

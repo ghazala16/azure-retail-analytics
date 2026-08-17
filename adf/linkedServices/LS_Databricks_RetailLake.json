@@ -1,6 +1,5 @@
 {
     "name": "LS_Databricks_RetailLake",
-    "type": "Microsoft.DataFactory/factories/linkedservices",
     "properties": {
         "annotations": [],
         "type": "AzureDatabricks",
