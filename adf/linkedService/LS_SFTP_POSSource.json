@@ -1,26 +1,23 @@
 {
-    "name": "LS_SFTP_POSSource",
-    "properties": {
-        "annotations": [],
-        "type": "Sftp",
-        "typeProperties": {
-            "host": "pos-export.retailcorp.internal",
-            "port": 22,
-            "authenticationType": "Basic",
-            "userName": "svc_adf_ingest",
-            "password": {
-                "type": "AzureKeyVaultSecret",
-                "store": {
-                    "referenceName": "LS_KeyVault_RetailLake",
-                    "type": "LinkedServiceReference"
-                },
-                "secretName": "sftp-pos-source-password"
-            },
-            "skipHostKeyValidation": false
-        },
-        "connectVia": {
-            "referenceName": "AutoResolveIntegrationRuntime",
-            "type": "IntegrationRuntimeReference"
-        }
-    }
+	"name": "LS_SFTP_POSSource",
+	"properties": {
+		"annotations": [],
+		"type": "Sftp",
+		"typeProperties": {
+			"host": "retailanalytics.blob.core.windows.net",
+			"port": 22,
+			"skipHostKeyValidation": false,
+			"hostKeyFingerprint": "ecdsa-sha2-nistp256 256 5b:cc:86:7b:0d:ee:c6:4b:92:f5:8e:47:74:a3:0c:ff",
+			"authenticationType": "Basic",
+			"userName": "retailanalytics.sftpuser",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "LS_KeyVault_RetailLake",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "sftp-pos-source-password"
+			}
+		}
+	}
 }
