@@ -1,10 +1,10 @@
 {
-    "name": "LS_KeyVault_RetailLake",
-    "properties": {
-        "annotations": [],
-        "type": "AzureKeyVault",
-        "typeProperties": {
-            "baseUrl": "https://kv-retail-lake.vault.azure.net/"
-        }
-    }
+	"name": "LS_KeyVault_RetailLake",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://kv-retail-analytics.vault.azure.net/"
+		}
+	}
 }
