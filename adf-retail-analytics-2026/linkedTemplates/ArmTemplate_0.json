@@ -1,0 +1,850 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "adf-retail-analytics-2026"
+		},
+		"LS_KeyVault_RetailLake_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://kv-retail-analytics.vault.azure.net/"
+		},
+		"LS_REST_DummyJSON_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://dummyjson.com/c/8982-38dc-4f32-831d"
+		},
+		"LS_ADLSGen2_RetailLake_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://retailanalytics.dfs.core.windows.net"
+		},
+		"LS_SFTP_POSSource_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "retailanalytics.blob.core.windows.net"
+		},
+		"LS_SFTP_POSSource_properties_typeProperties_hostKeyFingerprint": {
+			"type": "string",
+			"defaultValue": "ecdsa-sha2-nistp256 256 5b:cc:86:7b:0d:ee:c6:4b:92:f5:8e:47:74:a3:0c:ff"
+		},
+		"LS_SFTP_POSSource_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "retailanalytics.sftpuser"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_KeyVault_RetailLake')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('LS_KeyVault_RetailLake_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_REST_DummyJSON')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('LS_REST_DummyJSON_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_OnlineSales_REST')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_REST_DummyJSON",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": "carts",
+					"requestMethod": "GET",
+					"paginationRules": {
+						"supportRFC5988": "true"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_REST_DummyJSON')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_ADLSGen2_RetailLake')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('LS_ADLSGen2_RetailLake_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "LS_KeyVault_RetailLake",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "adls-retaillake-account-key"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_KeyVault_RetailLake')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_Databricks_RetailLake')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureDatabricks",
+				"typeProperties": {
+					"domain": "https://adb-7405613658142247.7.azuredatabricks.net",
+					"accessToken": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "LS_KeyVault_RetailLake",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "databricks-token"
+					},
+					"newClusterNodeType": "Standard_DS3_v2",
+					"newClusterNumOfWorker": "2:8",
+					"newClusterSparkEnvVars": {
+						"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+					},
+					"newClusterVersion": "14.3.x-scala2.12",
+					"clusterOption": "Fixed",
+					"newClusterInitScripts": [],
+					"newClusterAutoScale": {
+						"minWorkers": 2,
+						"maxWorkers": 8
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_KeyVault_RetailLake')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_SFTP_POSSource')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "Sftp",
+				"typeProperties": {
+					"host": "[parameters('LS_SFTP_POSSource_properties_typeProperties_host')]",
+					"port": 22,
+					"skipHostKeyValidation": false,
+					"hostKeyFingerprint": "[parameters('LS_SFTP_POSSource_properties_typeProperties_hostKeyFingerprint')]",
+					"authenticationType": "Basic",
+					"userName": "[parameters('LS_SFTP_POSSource_properties_typeProperties_userName')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "LS_KeyVault_RetailLake",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "sftp-pos-source-password"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_KeyVault_RetailLake')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_Transform_Bronze_to_Silver_Gold')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Triggers Databricks PySpark notebooks that cleanse, normalize, and aggregate bronze data into Delta Lake silver and gold analytical datasets, optimized for Power BI reporting.",
+				"activities": [
+					{
+						"name": "Cleanse_and_Normalize_to_Silver",
+						"type": "DatabricksNotebook",
+						"dependsOn": [],
+						"policy": {
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Shared/retail-analytics/02_cleanse_normalize_silver",
+							"baseParameters": {
+								"loadDate": {
+									"value": "@pipeline().parameters.loadDate",
+									"type": "Expression"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_Databricks_RetailLake",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Aggregate_to_Gold",
+						"type": "DatabricksNotebook",
+						"dependsOn": [
+							{
+								"activity": "Cleanse_and_Normalize_to_Silver",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Shared/retail-analytics/03_aggregate_gold",
+							"baseParameters": {
+								"loadDate": {
+									"value": "@pipeline().parameters.loadDate",
+									"type": "Expression"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_Databricks_RetailLake",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Data_Quality_Report",
+						"type": "DatabricksNotebook",
+						"dependsOn": [
+							{
+								"activity": "Aggregate_to_Gold",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Shared/retail-analytics/04_dq_report",
+							"baseParameters": {
+								"loadDate": {
+									"value": "@pipeline().parameters.loadDate",
+									"type": "Expression"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_Databricks_RetailLake",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Notify_On_Failure",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Data_Quality_Report",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"method": "POST",
+							"headers": {},
+							"url": "https://prod-00.westus.logic.azure.com/workflows/retail-alerts/invoke",
+							"body": {
+								"pipeline": "PL_Transform_Bronze_to_Silver_Gold",
+								"status": "Failed"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"loadDate": {
+						"type": "string"
+					}
+				},
+				"annotations": [
+					"retail-sales-analytics-platform"
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_Databricks_RetailLake')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ADLS_Bronze')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLSGen2_RetailLake",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"sourceName": {
+						"type": "string"
+					},
+					"loadDate": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "@concat('bronze/', dataset().sourceName, '/', dataset().loadDate)",
+							"type": "Expression"
+						},
+						"fileSystem": "retail-lake"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLSGen2_RetailLake')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ERP_ReferenceFiles')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_SFTP_POSSource",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"fileName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "SftpLocation",
+						"fileName": {
+							"value": "@dataset().fileName",
+							"type": "Expression"
+						},
+						"folderPath": "/exports/erp"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_SFTP_POSSource')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_StoreSales_SFTP')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_SFTP_POSSource",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "SftpLocation",
+						"fileName": "store_sales_*.csv",
+						"folderPath": "/exports/pos"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "transaction_id",
+						"type": "String"
+					},
+					{
+						"name": "store_id",
+						"type": "String"
+					},
+					{
+						"name": "product_id",
+						"type": "String"
+					},
+					{
+						"name": "quantity",
+						"type": "String"
+					},
+					{
+						"name": "unit_price",
+						"type": "String"
+					},
+					{
+						"name": "discount_pct",
+						"type": "String"
+					},
+					{
+						"name": "total_amount",
+						"type": "String"
+					},
+					{
+						"name": "payment_method",
+						"type": "String"
+					},
+					{
+						"name": "transaction_ts",
+						"type": "String"
+					},
+					{
+						"name": "customer_id",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_SFTP_POSSource')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_Ingest_RetailSources_to_Bronze')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Ingests the 4 retail source datasets (store_sales, online_sales, product_catalog, store_master) from POS/SFTP, e-commerce REST API, and ERP flat files into the ADLS Gen2 bronze zone. Runs schema validation activity before promoting data to silver.",
+				"activities": [
+					{
+						"name": "Copy_StoreSales_SFTP_to_Bronze",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "SftpReadSettings",
+									"recursive": true,
+									"wildcardFolderPath": "exports/pos",
+									"wildcardFileName": "store_sales.csv",
+									"disableChunking": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_StoreSales_SFTP",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_ADLS_Bronze",
+								"type": "DatasetReference",
+								"parameters": {
+									"sourceName": "store_sales",
+									"loadDate": "@formatDateTime(utcNow(), 'yyyy-MM-dd')"
+								}
+							}
+						]
+					},
+					{
+						"name": "Copy_OnlineSales_REST_to_Bronze",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:05:00",
+								"requestInterval": "00.00:00:00.010"
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"path": "[['order_id']"
+										},
+										"sink": {
+											"name": "order_id"
+										}
+									},
+									{
+										"source": {
+											"path": "[['product_id']"
+										},
+										"sink": {
+											"name": "product_id"
+										}
+									},
+									{
+										"source": {
+											"path": "[['quantity']"
+										},
+										"sink": {
+											"name": "quantity"
+										}
+									},
+									{
+										"source": {
+											"path": "[['order_total']"
+										},
+										"sink": {
+											"name": "order_total"
+										}
+									},
+									{
+										"source": {
+											"path": "[['shipping_region']"
+										},
+										"sink": {
+											"name": "shipping_region"
+										}
+									}
+								],
+								"collectionReference": "$.orders"
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_OnlineSales_REST",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_ADLS_Bronze",
+								"type": "DatasetReference",
+								"parameters": {
+									"sourceName": "online_sales",
+									"loadDate": "@formatDateTime(utcNow(), 'yyyy-MM-dd')"
+								}
+							}
+						]
+					},
+					{
+						"name": "Copy_ProductCatalog_ERP_to_Bronze",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "SftpReadSettings",
+									"recursive": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_ERP_ReferenceFiles",
+								"type": "DatasetReference",
+								"parameters": {
+									"fileName": "product_catalog.csv"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_ADLS_Bronze",
+								"type": "DatasetReference",
+								"parameters": {
+									"sourceName": "product_catalog",
+									"loadDate": "@formatDateTime(utcNow(), 'yyyy-MM-dd')"
+								}
+							}
+						]
+					},
+					{
+						"name": "Copy_StoreMaster_ERP_to_Bronze",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "SftpReadSettings",
+									"recursive": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_ERP_ReferenceFiles",
+								"type": "DatasetReference",
+								"parameters": {
+									"fileName": "store_master.csv"
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_ADLS_Bronze",
+								"type": "DatasetReference",
+								"parameters": {
+									"sourceName": "store_master",
+									"loadDate": "@formatDateTime(utcNow(), 'yyyy-MM-dd')"
+								}
+							}
+						]
+					},
+					{
+						"name": "Validate_Bronze_Schema",
+						"type": "DatabricksNotebook",
+						"dependsOn": [
+							{
+								"activity": "Copy_StoreSales_SFTP_to_Bronze",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "Copy_OnlineSales_REST_to_Bronze",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "Copy_ProductCatalog_ERP_to_Bronze",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "Copy_StoreMaster_ERP_to_Bronze",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebookPath": "/Users/ghazalajamal202@gmail.com/Shared/retail-analytics/01_schema_validation",
+							"baseParameters": {
+								"loadDate": {
+									"value": "@formatDateTime(utcNow(), 'yyyy-MM-dd')",
+									"type": "Expression"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_Databricks_RetailLake",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Execute_Silver_Gold_Transform_Pipeline",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Validate_Bronze_Schema",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "PL_Transform_Bronze_to_Silver_Gold",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [
+					"retail-sales-analytics-platform"
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_StoreSales_SFTP')]",
+				"[concat(variables('factoryId'), '/datasets/DS_ADLS_Bronze')]",
+				"[concat(variables('factoryId'), '/datasets/DS_OnlineSales_REST')]",
+				"[concat(variables('factoryId'), '/datasets/DS_ERP_ReferenceFiles')]",
+				"[concat(variables('factoryId'), '/linkedServices/LS_Databricks_RetailLake')]",
+				"[concat(variables('factoryId'), '/pipelines/PL_Transform_Bronze_to_Silver_Gold')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TR_Daily_RetailIngest')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "PL_Ingest_RetailSources_to_Bronze",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2026-06-01T02:00:00Z",
+						"timeZone": "UTC"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/PL_Ingest_RetailSources_to_Bronze')]"
+			]
+		}
+	]
+}

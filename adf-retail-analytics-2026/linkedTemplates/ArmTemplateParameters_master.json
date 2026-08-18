@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "adf-retail-analytics-2026"
+		},
+		"LS_ADLSGen2_RetailLake_properties_typeProperties_url": {
+			"value": "https://retailanalytics.dfs.core.windows.net"
+		},
+		"LS_KeyVault_RetailLake_properties_typeProperties_baseUrl": {
+			"value": "https://kv-retail-analytics.vault.azure.net/"
+		},
+		"LS_REST_DummyJSON_properties_typeProperties_url": {
+			"value": "https://dummyjson.com/c/8982-38dc-4f32-831d"
+		},
+		"LS_SFTP_POSSource_properties_typeProperties_host": {
+			"value": "retailanalytics.blob.core.windows.net"
+		},
+		"LS_SFTP_POSSource_properties_typeProperties_hostKeyFingerprint": {
+			"value": "ecdsa-sha2-nistp256 256 5b:cc:86:7b:0d:ee:c6:4b:92:f5:8e:47:74:a3:0c:ff"
+		},
+		"LS_SFTP_POSSource_properties_typeProperties_userName": {
+			"value": "retailanalytics.sftpuser"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
