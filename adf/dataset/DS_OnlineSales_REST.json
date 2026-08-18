@@ -8,7 +8,7 @@
 		"annotations": [],
 		"type": "RestResource",
 		"typeProperties": {
-			"relativeUrl": "/c/8982-38dc-4f32-831d",
+			"relativeUrl": "carts",
 			"requestMethod": "GET",
 			"paginationRules": {
 				"supportRFC5988": "true"
