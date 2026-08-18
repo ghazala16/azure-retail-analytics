@@ -86,7 +86,53 @@
 							"fileExtension": ".txt"
 						}
 					},
-					"enableStaging": false
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "['order_id']"
+								},
+								"sink": {
+									"name": "order_id"
+								}
+							},
+							{
+								"source": {
+									"path": "['product_id']"
+								},
+								"sink": {
+									"name": "product_id"
+								}
+							},
+							{
+								"source": {
+									"path": "['quantity']"
+								},
+								"sink": {
+									"name": "quantity"
+								}
+							},
+							{
+								"source": {
+									"path": "['order_total']"
+								},
+								"sink": {
+									"name": "order_total"
+								}
+							},
+							{
+								"source": {
+									"path": "['shipping_region']"
+								},
+								"sink": {
+									"name": "shipping_region"
+								}
+							}
+						],
+						"collectionReference": "$.orders"
+					}
 				},
 				"inputs": [
 					{

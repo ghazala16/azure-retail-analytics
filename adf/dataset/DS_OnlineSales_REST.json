@@ -8,7 +8,7 @@
 		"annotations": [],
 		"type": "RestResource",
 		"typeProperties": {
-			"relativeUrl": "products",
+			"relativeUrl": "/c/c788-1585-4fbd-8021",
 			"requestMethod": "GET",
 			"paginationRules": {
 				"supportRFC5988": "true"
