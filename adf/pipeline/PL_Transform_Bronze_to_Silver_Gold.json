@@ -79,7 +79,7 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"notebookPath": "/Shared/retail-analytics/04_dq_report",
+					"notebookPath": "/Users/ghazalajamal202@gmail.com/Shared/retail-analytics/04_dq_report",
 					"baseParameters": {
 						"loadDate": {
 							"value": "@pipeline().parameters.loadDate",
