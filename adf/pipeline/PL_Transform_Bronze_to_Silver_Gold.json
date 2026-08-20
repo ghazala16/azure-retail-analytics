@@ -47,7 +47,7 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"notebookPath": "/Shared/retail-analytics/03_aggregate_gold",
+					"notebookPath": "/Users/ghazalajamal202@gmail.com/Shared/retail-analytics/03_aggregate_gold",
 					"baseParameters": {
 						"loadDate": {
 							"value": "@pipeline().parameters.loadDate",
