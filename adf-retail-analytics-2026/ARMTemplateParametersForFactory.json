@@ -8,6 +8,9 @@
 		"LS_ADLSGen2_RetailLake_properties_typeProperties_url": {
 			"value": "https://retailanalytics.dfs.core.windows.net"
 		},
+		"LS_Databricks_RetailLake_properties_typeProperties_existingClusterId": {
+			"value": "0817-104607-m6y13nvf"
+		},
 		"LS_KeyVault_RetailLake_properties_typeProperties_baseUrl": {
 			"value": "https://kv-retail-analytics.vault.azure.net/"
 		},

@@ -19,6 +19,10 @@
 			"type": "string",
 			"defaultValue": "https://retailanalytics.dfs.core.windows.net"
 		},
+		"LS_Databricks_RetailLake_properties_typeProperties_existingClusterId": {
+			"type": "string",
+			"defaultValue": "0817-104607-m6y13nvf"
+		},
 		"LS_SFTP_POSSource_properties_typeProperties_host": {
 			"type": "string",
 			"defaultValue": "retailanalytics.blob.core.windows.net"
@@ -127,14 +131,7 @@
 						},
 						"secretName": "databricks-token"
 					},
-					"newClusterNodeType": "Standard_DS3_v2",
-					"newClusterNumOfWorker": "2:8",
-					"newClusterSparkEnvVars": {
-						"PYSPARK_PYTHON": "/databricks/python3/bin/python3"
-					},
-					"newClusterVersion": "14.3.x-scala2.12",
-					"clusterOption": "Fixed",
-					"newClusterInitScripts": [],
+					"existingClusterId": "[parameters('LS_Databricks_RetailLake_properties_typeProperties_existingClusterId')]",
 					"newClusterAutoScale": {
 						"minWorkers": 2,
 						"maxWorkers": 8

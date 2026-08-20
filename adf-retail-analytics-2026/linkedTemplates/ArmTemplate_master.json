@@ -11,6 +11,10 @@
 			"type": "string",
 			"defaultValue": "https://retailanalytics.dfs.core.windows.net"
 		},
+		"LS_Databricks_RetailLake_properties_typeProperties_existingClusterId": {
+			"type": "string",
+			"defaultValue": "0817-104607-m6y13nvf"
+		},
 		"LS_KeyVault_RetailLake_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://kv-retail-analytics.vault.azure.net/"
@@ -66,6 +70,9 @@
 					},
 					"LS_ADLSGen2_RetailLake_properties_typeProperties_url": {
 						"value": "[parameters('LS_ADLSGen2_RetailLake_properties_typeProperties_url')]"
+					},
+					"LS_Databricks_RetailLake_properties_typeProperties_existingClusterId": {
+						"value": "[parameters('LS_Databricks_RetailLake_properties_typeProperties_existingClusterId')]"
 					},
 					"LS_SFTP_POSSource_properties_typeProperties_host": {
 						"value": "[parameters('LS_SFTP_POSSource_properties_typeProperties_host')]"
