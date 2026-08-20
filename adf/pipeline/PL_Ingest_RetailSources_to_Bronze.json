@@ -335,6 +335,12 @@
 				}
 			}
 		],
+		"parameters": {
+			"loadDate": {
+				"type": "string",
+				"defaultValue": "2026-08-20"
+			}
+		},
 		"annotations": [
 			"retail-sales-analytics-platform"
 		]
