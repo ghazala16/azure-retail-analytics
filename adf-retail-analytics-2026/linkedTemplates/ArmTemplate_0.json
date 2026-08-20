@@ -300,7 +300,8 @@
 				},
 				"parameters": {
 					"loadDate": {
-						"type": "string"
+						"type": "string",
+						"defaultValue": "2026-08-20"
 					}
 				},
 				"annotations": [
