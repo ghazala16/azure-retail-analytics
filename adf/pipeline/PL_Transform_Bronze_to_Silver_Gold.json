@@ -1,103 +1,132 @@
 {
-    "name": "PL_Transform_Bronze_to_Silver_Gold",
-    "properties": {
-        "description": "Triggers Databricks PySpark notebooks that cleanse, normalize, and aggregate bronze data into Delta Lake silver and gold analytical datasets, optimized for Power BI reporting.",
-        "activities": [
-            {
-                "name": "Cleanse_and_Normalize_to_Silver",
-                "type": "DatabricksNotebook",
-                "typeProperties": {
-                    "notebookPath": "/Shared/retail-analytics/02_cleanse_normalize_silver",
-                    "baseParameters": {
-                        "loadDate": {
-                            "value": "@pipeline().parameters.loadDate",
-                            "type": "Expression"
-                        }
-                    }
-                },
-                "linkedServiceName": {
-                    "referenceName": "LS_Databricks_RetailLake",
-                    "type": "LinkedServiceReference"
-                }
-            },
-            {
-                "name": "Aggregate_to_Gold",
-                "type": "DatabricksNotebook",
-                "dependsOn": [
-                    {
-                        "activity": "Cleanse_and_Normalize_to_Silver",
-                        "dependencyConditions": [
-                            "Succeeded"
-                        ]
-                    }
-                ],
-                "typeProperties": {
-                    "notebookPath": "/Shared/retail-analytics/03_aggregate_gold",
-                    "baseParameters": {
-                        "loadDate": {
-                            "value": "@pipeline().parameters.loadDate",
-                            "type": "Expression"
-                        }
-                    }
-                },
-                "linkedServiceName": {
-                    "referenceName": "LS_Databricks_RetailLake",
-                    "type": "LinkedServiceReference"
-                }
-            },
-            {
-                "name": "Data_Quality_Report",
-                "type": "DatabricksNotebook",
-                "dependsOn": [
-                    {
-                        "activity": "Aggregate_to_Gold",
-                        "dependencyConditions": [
-                            "Succeeded"
-                        ]
-                    }
-                ],
-                "typeProperties": {
-                    "notebookPath": "/Shared/retail-analytics/04_dq_report",
-                    "baseParameters": {
-                        "loadDate": {
-                            "value": "@pipeline().parameters.loadDate",
-                            "type": "Expression"
-                        }
-                    }
-                },
-                "linkedServiceName": {
-                    "referenceName": "LS_Databricks_RetailLake",
-                    "type": "LinkedServiceReference"
-                }
-            },
-            {
-                "name": "Notify_On_Failure",
-                "type": "WebActivity",
-                "dependsOn": [
-                    {
-                        "activity": "Data_Quality_Report",
-                        "dependencyConditions": [
-                            "Failed"
-                        ]
-                    }
-                ],
-                "typeProperties": {
-                    "url": "https://prod-00.westus.logic.azure.com/workflows/retail-alerts/invoke",
-                    "method": "POST",
-                    "body": {
-                        "pipeline": "PL_Transform_Bronze_to_Silver_Gold",
-                        "status": "Failed"
-                    }
-                }
-            }
-        ],
-        "parameters": {
-            "loadDate": {
-                "type": "string"
-            }
-        },
-        "annotations": [
-            "retail-sales-analytics-platform"
-        ]
-    }
+	"name": "PL_Transform_Bronze_to_Silver_Gold",
+	"properties": {
+		"description": "Triggers Databricks PySpark notebooks that cleanse, normalize, and aggregate bronze data into Delta Lake silver and gold analytical datasets, optimized for Power BI reporting.",
+		"activities": [
+			{
+				"name": "Cleanse_and_Normalize_to_Silver",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Users/ghazalajamal202@gmail.com/Shared/retail-analytics/02_cleanse_normalize_silver",
+					"baseParameters": {
+						"loadDate": {
+							"value": "@pipeline().parameters.loadDate",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_Databricks_RetailLake",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Aggregate_to_Gold",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Cleanse_and_Normalize_to_Silver",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Shared/retail-analytics/03_aggregate_gold",
+					"baseParameters": {
+						"loadDate": {
+							"value": "@pipeline().parameters.loadDate",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_Databricks_RetailLake",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Data_Quality_Report",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Aggregate_to_Gold",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Shared/retail-analytics/04_dq_report",
+					"baseParameters": {
+						"loadDate": {
+							"value": "@pipeline().parameters.loadDate",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_Databricks_RetailLake",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Notify_On_Failure",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Data_Quality_Report",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"url": "https://prod-00.westus.logic.azure.com/workflows/retail-alerts/invoke",
+					"body": {
+						"pipeline": "PL_Transform_Bronze_to_Silver_Gold",
+						"status": "Failed"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"loadDate": {
+				"type": "string"
+			}
+		},
+		"annotations": [
+			"retail-sales-analytics-platform"
+		]
+	}
 }
