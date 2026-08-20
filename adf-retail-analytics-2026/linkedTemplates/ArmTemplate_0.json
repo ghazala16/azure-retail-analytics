@@ -189,7 +189,7 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"notebookPath": "/Shared/retail-analytics/02_cleanse_normalize_silver",
+							"notebookPath": "/Users/ghazalajamal202@gmail.com/Shared/retail-analytics/02_cleanse_normalize_silver",
 							"baseParameters": {
 								"loadDate": {
 									"value": "@pipeline().parameters.loadDate",
@@ -221,7 +221,7 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"notebookPath": "/Shared/retail-analytics/03_aggregate_gold",
+							"notebookPath": "/Users/ghazalajamal202@gmail.com/Shared/retail-analytics/03_aggregate_gold",
 							"baseParameters": {
 								"loadDate": {
 									"value": "@pipeline().parameters.loadDate",
@@ -253,7 +253,7 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"notebookPath": "/Shared/retail-analytics/04_dq_report",
+							"notebookPath": "/Users/ghazalajamal202@gmail.com/Shared/retail-analytics/04_dq_report",
 							"baseParameters": {
 								"loadDate": {
 									"value": "@pipeline().parameters.loadDate",
@@ -799,6 +799,12 @@
 				],
 				"policy": {
 					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"loadDate": {
+						"type": "string",
+						"defaultValue": "2026-08-20"
+					}
 				},
 				"annotations": [
 					"retail-sales-analytics-platform"
